@@ -1,10 +1,16 @@
 const Product = require('../models/productModel');
 
 // Create a new product (Seller Only)
-exports.createProduct = async (req, res) => {
+const createProduct = async (req, res) => {
   try {
+    // Ensure the user is a seller
+    if (req.user.role !== 'seller') {
+      return res.status(403).json({ error: 'Unauthorized: Only sellers can create products' });
+    }
+
     const { name, description, price } = req.body;
-    const sellerId = req.user._id; // Retrieve the seller's ID from the authenticated user
+    const sellerId = req.user._id;
+
     const newProduct = await Product.create({ name, description, price, seller: sellerId });
     res.status(201).json(newProduct);
   } catch (error) {
@@ -13,7 +19,7 @@ exports.createProduct = async (req, res) => {
 };
 
 // Get all products (Accessible to both buyers and sellers)
-exports.getProducts = async (req, res) => {
+const getProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const products = await Product.find()
@@ -34,52 +40,74 @@ exports.getProducts = async (req, res) => {
 };
 
 // Update a product (Seller Only)
-exports.updateProduct = async (req, res) => {
+const updateProduct = async (req, res) => {
+  const { name, description, price } = req.body;
+  const { id } = req.params; // Product ID from URL
+
   try {
-    const { id } = req.params;
-    const updates = req.body;
-
-    // Find the product and check if the seller owns it
+    // Find the product by ID
     const product = await Product.findById(id);
+
+    // Check if the product exists
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    
-    // Ensure the seller updating the product is the owner
-    if (product.seller.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: 'Unauthorized: Only the seller can update this product' });
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Update the product
-    Object.assign(product, updates);
+    // Check if the authenticated user is the seller of the product
+    if (product.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized: Only the seller can update this product' });
+    }
+
+    // Update the product details
+    product.name = name || product.name; // Allow partial updates
+    product.description = description || product.description;
+    product.price = price || product.price;
+
+    // Save the updated product
     await product.save();
 
     res.json(product);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 // Delete a product (Seller Only)
-exports.deleteProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
+const deleteProduct = async (req, res) => {
+  const { id } = req.params;
 
-    // Find the product and check if the seller owns it
+  try {
+    // Find the product by ID
     const product = await Product.findById(id);
+
+    // Check if the product exists
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Ensure the seller deleting the product is the owner
-    if (product.seller.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: 'Unauthorized: Only the seller can delete this product' });
+    // Check if the authenticated user is the seller of the product
+    if (product.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized: Only the seller can delete this product' });
     }
 
     // Delete the product
     await product.remove();
+
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+// Export all the controller functions
+module.exports = {
+  createProduct,
+  getProducts,
+  updateProduct,
+  deleteProduct
+};
+
+
+
+

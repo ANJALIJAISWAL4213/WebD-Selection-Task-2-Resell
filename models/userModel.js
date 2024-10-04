@@ -19,12 +19,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    required: [true, 'Role is required'],
     enum: ['user', 'seller'],
     default: 'user',
   },
   contactInfo: {
     type: String,
-    required: [true, 'Contact information is required'],
+    required: [true, 'Contact information is required'], // Removed duplication
   },
   location: {
     type: String,
@@ -56,8 +57,8 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Static method for signup
-userSchema.statics.signup = async function(email, password, contactInfo) {
-  const user = await this.create({ email, password, contactInfo });
+userSchema.statics.signup = async function(email, password, role, contactInfo) {
+  const user = await this.create({ email, password, role, contactInfo }); // Added role
   return user;
 };
 

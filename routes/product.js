@@ -1,25 +1,12 @@
 const express = require('express');
-const {
-  createProduct,
-  getProducts,
-  updateProduct,
-  deleteProduct
-} = require('../controllers/productController');
-const requireAuth = require('../middleware/requireAuth'); // Ensure the user is authenticated
-const requireSellerRole = require('../middleware/requireSellerRole'); // Ensure the user is a seller
-
 const router = express.Router();
+const productController = require('../controllers/productController');
+const requireAuth = require('../middleware/requireAuth'); // Adjusting import to directly use requireAuth
 
-// All routes below require the user to be authenticated
-router.use(requireAuth);
-
-// Route accessible to both buyers and sellers (get all products)
-router.get('/', getProducts);
-
-// Routes for sellers only (create, update, and delete products)
-router.post('/', requireSellerRole, createProduct);
-router.put('/:id', requireSellerRole, updateProduct);
-router.delete('/:id', requireSellerRole, deleteProduct);
+// Product routes
+router.post('/', requireAuth, productController.createProduct); // Create product (Seller only)
+router.get('/', productController.getProducts);             // Get products (Everyone can access)
+router.put('/:id', requireAuth, productController.updateProduct); // Update product (Seller only)
+router.delete('/:id', requireAuth, productController.deleteProduct); // Delete product (Seller only)
 
 module.exports = router;
-

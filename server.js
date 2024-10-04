@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
-const cartRoutes = require('./routes/cart');
+//const cartRoutes = require('./routes/cart');
 const checkoutRoutes = require('./routes/checkout'); // Import checkout routes
 const reviewRoutes = require('./routes/review'); // Import review routes
 
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 // Route definitions
 app.use('/api/users', userRoutes); 
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
+//app.use('/api/cart', cartRoutes);
 app.use('/api/checkout', checkoutRoutes); // Add checkout routes
 app.use('/api/review', reviewRoutes); // Add review routes
 
