@@ -4,9 +4,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/user');
 const productRoutes = require('./routes/product');
-//const cartRoutes = require('./routes/cart');
+const chatRoutes = require('./routes/chat'); 
 const checkoutRoutes = require('./routes/checkout'); // Import checkout routes
 const reviewRoutes = require('./routes/review'); // Import review routes
+const notificationRoutes = require('./routes/notificationRoutes'); // Import notification routes
+const requireAuth = require('./middleware/checkNotifications'); // Import authentication middleware
+
 
 const app = express();
 
@@ -22,9 +25,11 @@ app.use((req, res, next) => {
 // Route definitions
 app.use('/api/users', userRoutes); 
 app.use('/api/products', productRoutes);
-//app.use('/api/cart', cartRoutes);
+app.use('/api/chat', chatRoutes); // Register the chat routes
 app.use('/api/checkout', checkoutRoutes); // Add checkout routes
 app.use('/api/review', reviewRoutes); // Add review routes
+app.use('/api/notifications', notificationRoutes); // Use the notification routes
+
 
 // Connect to MongoDB and start the server
 mongoose.connect(process.env.MONGO_URI)

@@ -111,6 +111,8 @@
 
 
 const Product = require('../models/productModel');
+const { notifyPriceDrop, notifyNewProduct } = require('../services/notificationService');
+
 
 // Create a new product (Seller Only)
 const createProduct = async (req, res) => {
@@ -251,12 +253,98 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// Export all the controller functions
+// Feature a product (Seller Only)
+const featureProduct = async (req, res) => {
+  const { id } = req.params; // Product ID from URL
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(id);
+
+    // Check if the product exists
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Check if the authenticated user is the seller of the product
+    if (product.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized: Only the seller can feature this product' });
+    }
+
+    // Update the product to be featured
+    product.isFeatured = true; // Assuming you have an isFeatured field in your Product model
+    await product.save();
+
+    res.json({ message: 'Product featured successfully', product });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Unfeature a product (Seller Only)
+const unfeatureProduct = async (req, res) => {
+  const { id } = req.params; // Product ID from URL
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(id);
+
+    // Check if the product exists
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Check if the authenticated user is the seller of the product
+    if (product.seller.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized: Only the seller can unfeature this product' });
+    }
+
+    // Update the product to be unfeatured
+    product.isFeatured = false; // Assuming you have an isFeatured field in your Product model
+    await product.save();
+
+    res.json({ message: 'Product unfeatured successfully', product });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get all featured products (Accessible to both buyers and sellers)
+const getFeaturedProducts = async (req, res) => {
+  try {
+    const featuredProducts = await Product.find({ isFeatured: true }); // Fetch products where isFeatured is true
+    res.status(200).json({ success: true, count: featuredProducts.length, products: featuredProducts });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+// Example function to check for price drops
+const checkPriceDrop = async (productId) => {
+  const product = await Product.findById(productId);
+  // Logic to check previous price and current price
+  // If price drops, call notifyPriceDrop(userId, product);
+};
+
+// Example function to notify about new products
+const notifyUsersOfNewProduct = async (product) => {
+  const users = await User.find({ favoriteCategories: product.category });
+  users.forEach(user => {
+    notifyNewProduct(user._id, product);
+  });
+};
+
+// Export all the controller functions, including the new ones
 module.exports = {
   createProduct,
   getProducts,
-  searchProducts, // Export the new searchProducts function
+  searchProducts,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  featureProduct,        // New function to feature a product
+  unfeatureProduct,      // New function to unfeature a product
+  getFeaturedProducts,
+  checkPriceDrop   // New function to get featured products
 };
 

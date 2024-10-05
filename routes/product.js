@@ -25,4 +25,10 @@ router.get('/search', productController.searchProducts); // Search and filter pr
 router.put('/:id', requireAuth, productController.updateProduct); // Update product (Seller only)
 router.delete('/:id', requireAuth, productController.deleteProduct); // Delete product (Seller only)
 
+// New routes for featured listings
+router.post('/:id/feature', requireAuth, productController.featureProduct); // Feature a product (Seller only)
+router.post('/:id/unfeature', requireAuth, productController.unfeatureProduct); // Unfeature a product (Seller only)
+router.get('/featured', productController.getFeaturedProducts); // Get all featured products (Everyone can access)
+
+
 module.exports = router;

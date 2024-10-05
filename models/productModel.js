@@ -49,6 +49,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     trim: true,
     index: true // Indexing for location-based filtering
+  },
+  isFeatured: { // New field for featured products
+    type: Boolean,
+    default: false // Default to false
   }
 }, { timestamps: true });
 
