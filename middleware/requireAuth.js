@@ -40,6 +40,13 @@ const requireAuth = async (req, res, next) => {
       return next(); // Allow removing from likes, favorites, or cart
     }
 
+
+    // Allow both buyers and sellers to checkout
+    if (req.method === 'POST' && req.path.includes('/checkout/')) {
+      return next(); // Allow buyers and sellers to checkout
+    }
+
+
     // Role-based logic: restrict certain routes for sellers only
     if (['POST', 'DELETE'].includes(req.method)) {
       if (req.user.role !== 'seller') {
